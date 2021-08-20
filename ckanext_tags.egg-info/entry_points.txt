@@ -1,0 +1,7 @@
+
+        [ckan.plugins]
+        tags=ckanext.tags.plugin:tagsPlugin
+
+        [babel.extractors]
+        ckan = ckan.lib.extract:extract_ckan
+    
