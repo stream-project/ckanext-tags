@@ -80,7 +80,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points='''
         [ckan.plugins]
-        tags=ckanext.tags.plugin:tagsPlugin
+        tags=ckanext.tags.plugin:ExampleIDatasetFormPlugin
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
