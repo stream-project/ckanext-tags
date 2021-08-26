@@ -5,8 +5,11 @@ import logging
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 
+import rdflib
+from SPARQLWrapper import SPARQLWrapper, JSON
 
-def create_semantic_taxonomy_tags():
+
+def recreate_semantic_taxonomy_tags():
     '''Create semantic_taxonomy_tags vocab and tags, if they don't exist already.
     Note that you could also create the vocab and tags using CKAN's API,
     and once they are created you can edit them (e.g. to add and remove
@@ -14,24 +17,51 @@ def create_semantic_taxonomy_tags():
     '''
     user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
     context = {'user': user['name']}
+
+    sparql = SPARQLWrapper("https://sparql.stream-dataspace.net/sparql/")
+    sparql.setQuery("""
+        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+        SELECT ?subject ?label
+        FROM NAMED <http://stream-ontology.com/tags/>
+        { GRAPH ?g { 
+            ?subject a skos:Concept ;
+              skos:prefLabel ?label . 
+        } }
+    """)
+    sparql.setReturnFormat(JSON)
+    new_tags = sparql.query().convert()
+
     try:
         data = {'id': 'semantic_taxonomy_tags'}
-        tk.get_action('vocabulary_show')(context, data)
-        logging.info("Example genre vocabulary already exists, skipping.")
+        vocab = tk.get_action('vocabulary_show')(context, data)
+        logging.warning("semantic_taxonomy_tags vocabulary already exists, delete entries.")
+        #TODO remove only tags which are not present in the graph
+        semantic_taxonomy_tags = tk.get_action('tag_list')(
+            data_dict={'vocabulary_id': 'semantic_taxonomy_tags'})
+        logging.warning("Now deleting {0} tags'".format(len(semantic_taxonomy_tags)))
+        for tag in semantic_taxonomy_tags:
+            logging.warning(
+                "Removing tag {0} to vocab 'semantic_taxonomy_tags'".format(tag))
+            data = {'id': tag, 'vocabulary_id': 'semantic_taxonomy_tags'}
+            tk.get_action('tag_delete')(context, data)
+
     except tk.ObjectNotFound:
-        logging.info("Creating vocab 'semantic_taxonomy_tags'")
+        logging.warning("Creating vocab 'semantic_taxonomy_tags'")
         data = {'name': 'semantic_taxonomy_tags'}
         vocab = tk.get_action('vocabulary_create')(context, data)
-        for tag in (u'uk', u'ie', u'de', u'fr', u'es'):
-            logging.info(
-                    "Adding tag {0} to vocab 'semantic_taxonomy_tags'".format(tag))
-            data = {'name': tag, 'vocabulary_id': vocab['id']}
-            tk.get_action('tag_create')(context, data)
+
+    logging.warning("Now adding {0} tags'".format(len(new_tags["results"]["bindings"])))
+    for tag in new_tags["results"]["bindings"]:
+        logging.warning(
+            "Adding tag {0} to vocab 'semantic_taxonomy_tags'".format(tag["label"]['value']))
+        data = {'name': tag["label"]['value'], 'vocabulary_id': vocab['id']}
+        tk.get_action('tag_create')(context, data)
+
 
 
 def semantic_taxonomy_tags():
     '''Return the list of country codes from the country codes vocabulary.'''
-    create_semantic_taxonomy_tags()
+    recreate_semantic_taxonomy_tags()
     try:
         semantic_taxonomy_tags = tk.get_action('tag_list')(
                 data_dict={'vocabulary_id': 'semantic_taxonomy_tags'})

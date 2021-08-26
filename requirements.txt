@@ -1,0 +1,4 @@
+rdflib==4.2.1
+future>=0.18.2
+six
+sparqlwrapper
