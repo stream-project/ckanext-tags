@@ -6,7 +6,14 @@
   {# Add our custom country_code field to the dataset read page. #}
   {% if pkg.get('semantic_taxonomy_tags') %}
     <section id="dataset-semantic_taxonomy_tag" class="resources module-content">
-    <p><strong>Semantic Tags</strong>: {{ pkg.semantic_taxonomy_tags[0] }}</p>
+    <strong>Semantic Tags</strong>:
+      <ul class="tag-list well">
+        {% for semantic_taxonomy_tag in pkg.semantic_taxonomy_tags  %}
+          <li>
+            <a class="tag" href="/dataset?semantic_taxonomy_tags={{ semantic_taxonomy_tag }}">{{ semantic_taxonomy_tag }}</a>
+          </li>
+        {% endfor %}
+      </ul>
     </section>
   {% endif %}
 

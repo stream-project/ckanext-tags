@@ -42,6 +42,11 @@ def recreate_semantic_taxonomy_tags():
         existing_tags = []
         for tag in new_tags["results"]["bindings"]:
             taglist.append(tag["label"]['value']);
+
+        if (len(taglist) < 1):
+            #Cancel because service seems to have issues
+            return
+
         for tag in semantic_taxonomy_tags:
             try:
                 taglist.index(tag)
