@@ -9,11 +9,28 @@
   <div class="control-group">
     <label class="control-label" for="field-semantic_taxonomy_tags">{{ _("Semantic Tags") }}</label>
     <div class="controls">
-      <select id="field-semantic_taxonomy_tags" name="semantic_taxonomy_tags" data-module="autocomplete" multiple>
-        {% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
-          <option value="{{ semantic_taxonomy_tag }}" {% if semantic_taxonomy_tag in data.get('semantic_taxonomy_tags', []) %}selected="selected"{% endif %}>{{ semantic_taxonomy_tag }}</option>
-        {% endfor %}
-      </select>
+      <div class="select2-container select2-container-multi" id="s2id_field-semantic_taxonomy_tags" style="width: 535px;">
+        <ul class="select2-choices">
+          {% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
+            <li class="select2-search-choice">
+              <div>{{ semantic_taxonomy_tag }}</div>
+              <a href="#" class="select2-search-choice-close" tabindex="-1"></a>
+            </li>
+          {% endfor %}
+          <li class="select2-search-field">
+            <label for="s2id_autogen2" class="select2-offscreen">Tags</label>
+            <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" id="s2id_autogen2" placeholder="" style="width: 20px;" />
+          </li>
+        </ul>
+        <div class="select2-drop select2-drop-multi select2-display-none">
+          <ul class="select2-results">
+          </ul>
+        </div>
+      </div>
+
+      <input id="field-semantic_taxonomy_tags" type="text" name="semantic_taxonomy_tag_string" value="{% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
+          {{ semantic_taxonomy_tag }},
+       {% endfor %}" placeholder="semantic_taxonomy_tags" data-module-semantic_taxonomy_tags="" data-module="autocomplete" data-module-source="/api/2/util/tag/autocomplete?vocabulary_id=semantic_taxonomy_tags&incomplete=%3F" tabindex="-1" class="select2-offscreen" />
     </div>
   </div>
   {{ super() }}
