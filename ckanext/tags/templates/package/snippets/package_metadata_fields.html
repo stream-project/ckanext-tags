@@ -7,17 +7,17 @@
 
 {% block package_metadata_fields %}
   <div class="control-group">
-    <label class="control-label" for="field-semantic_taxonomy_tags">{{ _("Semantic Tags") }}</label>
+    <label class="control-label" for="semantic_taxonomy_tags">{{ _("Semantic Tags") }}</label>
     <div class="controls">
       <div class="select2-container select2-container-multi" id="s2id_field-semantic_taxonomy_tags" style="width: 535px;">
-        <ul class="select2-choices">
-          {% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
+        <ul class="select2-choices" id="semantic_taxonomy_tags" name="semantic_taxonomy_tags">
+          {% for semantic_taxonomy_tag in data.get('semantic_taxonomy_tags', [])  %}
             <li class="select2-search-choice">
               <div>{{ semantic_taxonomy_tag }}</div>
               <a href="#" class="select2-search-choice-close" tabindex="-1"></a>
             </li>
           {% endfor %}
-          <li class="select2-search-field">
+          <li class="select2-search-field" id="field-semantic_taxonomy_tags-end">
             <label for="s2id_autogen2" class="select2-offscreen">Tags</label>
             <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" id="s2id_autogen2" placeholder="" style="width: 20px;" />
           </li>
@@ -27,12 +27,57 @@
           </ul>
         </div>
       </div>
+    </div>
 
-      <input id="field-semantic_taxonomy_tags" type="text" name="semantic_taxonomy_tag_string" value="{% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
-          {{ semantic_taxonomy_tag }},
-       {% endfor %}" placeholder="semantic_taxonomy_tags" data-module-semantic_taxonomy_tags="" data-module="autocomplete" data-module-source="/api/2/util/tag/autocomplete?vocabulary_id=semantic_taxonomy_tags&incomplete=%3F" tabindex="-1" class="select2-offscreen" />
+    <label class="control-label" for="all-semantic_taxonomy_tags">{{ _("Add Semantic Tags") }}</label>
+    <div class="controls">
+      <input list="all-semantic_taxonomy_tags" id="all-semantic_taxonomy_tags-input">
+      <datalist id="all-semantic_taxonomy_tags" name="all-semantic_taxonomy_tags">
+        {% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
+            <option value="{{ semantic_taxonomy_tag }}">
+        {% endfor %}
+      </datalist>
     </div>
   </div>
+  <script>
+    setTimeout(function(){ $(document).on('change', 'input', function(){
+      // TODO remove selected semantic tags from datalist
+      // TODO add semantic tag to datalist if removed via x
+
+
+      var optionslist = $('#all-semantic_taxonomy_tags')[0].options;
+      var value = $(this).val();
+      for (var x=0;x<optionslist.length;x++){
+         if (optionslist[x].value === value) {
+            // Add entry to list
+            var ul = document.getElementById("semantic_taxonomy_tags");
+            var li = document.createElement("li");
+            li.className = "select2-search-choice";
+            var div = document.createElement("div");
+            div.innerText = value;
+            var a = document.createElement("a");
+            a.href = "#";
+            a.className = "select2-search-choice-close";
+            a.tabIndex = -1;
+            li.appendChild(div);
+            li.appendChild(a);
+            //ul.appendChild(li);
+            ul.insertBefore(li, document.getElementById("field-semantic_taxonomy_tags-end"))
+
+            // Clear datalist
+            document.getElementById("all-semantic_taxonomy_tags-input").value = "";
+            // remove already selected one
+            var m = document.getElementById("all-semantic_taxonomy_tags")
+            for (let item of m.children) {
+              if (item.value === value)
+                m.removeChild(item);
+            }
+
+            break;
+         }
+      }
+  })}, 3000);
+  </script>
   {{ super() }}
 
 {% endblock %}

@@ -7,7 +7,11 @@ import ckan.plugins.toolkit as tk
 
 import rdflib
 from SPARQLWrapper import SPARQLWrapper, JSON
+import ssl
 
+# Very bad code - should be removed for production!
+ssl._create_default_https_context = ssl._create_unverified_context
+# Reason is that python 2.x seems to have issues with SSL since 2021-10-01
 
 def recreate_semantic_taxonomy_tags():
     '''Create semantic_taxonomy_tags vocab and tags, if they don't exist already.
