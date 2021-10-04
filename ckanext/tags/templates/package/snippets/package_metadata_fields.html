@@ -7,25 +7,17 @@
 
 {% block package_metadata_fields %}
   <div class="control-group">
-    <label class="control-label" for="semantic_taxonomy_tags">{{ _("Semantic Tags") }}</label>
+    <label class="control-label" for="field-semantic_taxonomy_tags">{{ _("Semantic Tags") }}</label>
     <div class="controls">
       <div class="select2-container select2-container-multi" id="s2id_field-semantic_taxonomy_tags" style="width: 535px;">
-        <ul class="select2-choices" id="semantic_taxonomy_tags" name="semantic_taxonomy_tags">
+        <ul class="select2-choices" id="field-semantic_taxonomy_tags" name="semantic_taxonomy_tags">
           {% for semantic_taxonomy_tag in data.get('semantic_taxonomy_tags', [])  %}
             <li class="select2-search-choice">
               <div>{{ semantic_taxonomy_tag }}</div>
               <a href="#" class="select2-search-choice-close" tabindex="-1"></a>
             </li>
           {% endfor %}
-          <li class="select2-search-field" id="field-semantic_taxonomy_tags-end">
-            <label for="s2id_autogen2" class="select2-offscreen">Tags</label>
-            <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" id="s2id_autogen2" placeholder="" style="width: 20px;" />
-          </li>
         </ul>
-        <div class="select2-drop select2-drop-multi select2-display-none">
-          <ul class="select2-results">
-          </ul>
-        </div>
       </div>
     </div>
 
@@ -50,7 +42,7 @@
       for (var x=0;x<optionslist.length;x++){
          if (optionslist[x].value === value) {
             // Add entry to list
-            var ul = document.getElementById("semantic_taxonomy_tags");
+            var ul = document.getElementById("field-semantic_taxonomy_tags");
             var li = document.createElement("li");
             li.className = "select2-search-choice";
             var div = document.createElement("div");
@@ -61,8 +53,8 @@
             a.tabIndex = -1;
             li.appendChild(div);
             li.appendChild(a);
-            //ul.appendChild(li);
-            ul.insertBefore(li, document.getElementById("field-semantic_taxonomy_tags-end"))
+            ul.appendChild(li);
+            //ul.insertBefore(li, document.getElementById("field-semantic_taxonomy_tags-end"))
 
             // Clear datalist
             document.getElementById("all-semantic_taxonomy_tags-input").value = "";
