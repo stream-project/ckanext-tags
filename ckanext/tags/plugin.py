@@ -42,6 +42,10 @@ def recreate_semantic_taxonomy_tags():
         # remove only tags which are not present in the graph
         semantic_taxonomy_tags = tk.get_action('tag_list')(
             data_dict={'vocabulary_id': 'semantic_taxonomy_tags'})
+
+        for tag in semantic_taxonomy_tags:
+            logging.warning("Current tag \"{0}\" of vocab 'semantic_taxonomy_tags'".format(tag))
+
         taglist = []
         existing_tags = []
         for tag in new_tags["results"]["bindings"]:
