@@ -25,7 +25,7 @@
     <input id="field-semantic_taxonomy_tags" type="text" name="semantic_taxonomy_tags" value="{{ currentValues }}" tabindex="-1" class="select2-offscreen" style="display: none;">
     <label class="control-label" for="all-semantic_taxonomy_tags">{{ _("Add Semantic Tags") }}</label>
     <div class="controls">
-      <input list="all-semantic_taxonomy_tags" id="all-semantic_taxonomy_tags-input">
+      <input type="text" list="all-semantic_taxonomy_tags" id="all-semantic_taxonomy_tags-input">
       <datalist id="all-semantic_taxonomy_tags" name="all-semantic_taxonomy_tags">
         {% for semantic_taxonomy_tag in h.semantic_taxonomy_tags()  %}
             <option value="{{ semantic_taxonomy_tag }}">
@@ -34,45 +34,62 @@
     </div>
   </div>
   <script>
+  var addValue = (value) => {
+    if (!value || value.length < 1)
+      return;
+
+    console.log("Now adding", value);
+
+    // Add entry to list
+    var ul = document.getElementById("field-ul-semantic_taxonomy_tags");
+    var li = document.createElement("li");
+    li.className = "select2-search-choice";
+    var div = document.createElement("div");
+    div.innerText = value;
+    var a = document.createElement("a");
+    a.href = "#";
+    a.className = "select2-search-choice-close";
+    a.tabIndex = -1;
+    li.appendChild(div);
+    li.appendChild(a);
+    ul.appendChild(li);
+    //ul.insertBefore(li, document.getElementById("field-semantic_taxonomy_tags-end"))
+
+    // Add value to hidden input
+    var hidden = document.getElementById("field-semantic_taxonomy_tags");
+    if (hidden.value === "")
+      hidden.value = value;
+    else
+      hidden.value += ", "+value;
+
+    // Clear datalist
+    document.getElementById("all-semantic_taxonomy_tags-input").value = "";
+    // remove already selected one
+    var m = document.getElementById("all-semantic_taxonomy_tags")
+    for (let item of m.children) {
+      if (item.value === value)
+        m.removeChild(item);
+    }
+  };
+
     setTimeout(function(){ $(document).on('change', 'input', function(){
-      // TODO remove selected semantic tags from datalist
+      // TODO make more than one tag work
+      // TODO make the remove button work (x)
       // TODO add semantic tag to datalist if removed via x
+
+      $("#all-semantic_taxonomy_tags-input").on('keyup', function (e) {
+          if (e.key === 'Enter' || e.keyCode === 13) {
+              console.log(e);
+              addValue($("#all-semantic_taxonomy_tags-input")[0].value);
+          }
+      });
 
 
       var optionslist = $('#all-semantic_taxonomy_tags')[0].options;
       var value = $(this).val();
       for (var x=0;x<optionslist.length;x++){
          if (optionslist[x].value === value) {
-            // Add entry to list
-            var ul = document.getElementById("field-ul-semantic_taxonomy_tags");
-            var li = document.createElement("li");
-            li.className = "select2-search-choice";
-            var div = document.createElement("div");
-            div.innerText = value;
-            var a = document.createElement("a");
-            a.href = "#";
-            a.className = "select2-search-choice-close";
-            a.tabIndex = -1;
-            li.appendChild(div);
-            li.appendChild(a);
-            ul.appendChild(li);
-            //ul.insertBefore(li, document.getElementById("field-semantic_taxonomy_tags-end"))
-
-            // Add value to hidden input
-            var hidden = document.getElementById("field-semantic_taxonomy_tags");
-            if (hidden.value === "")
-              hidden.value = value;
-            else
-              hidden.value += ", "+value;
-
-            // Clear datalist
-            document.getElementById("all-semantic_taxonomy_tags-input").value = "";
-            // remove already selected one
-            var m = document.getElementById("all-semantic_taxonomy_tags")
-            for (let item of m.children) {
-              if (item.value === value)
-                m.removeChild(item);
-            }
+            addValue(value);
 
             break;
          }
