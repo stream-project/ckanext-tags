@@ -8,11 +8,13 @@ ckanext-tags
 
 This extension does add semantic tags to datasets. It is conneted to a SPARQL endpoint. For more details see task 4.4 of the STREAM project.
 
+It is based on CKAN official example http://docs.ckan.org/en/2.7/extensions/adding-custom-fields.html
+
 ------------
 Requirements
 ------------
 
-CKAN 2.7
+See requirements.txt
 
 
 ------------
@@ -23,7 +25,14 @@ Installation
    For example installing any non-Python dependencies or adding any required
    config settings.
 
-See Dockerfile of parent repository.
+Inside Dockerfile:
+
+```
+ADD ./Plugins/ckanext-tags $CKAN_HOME/src/ckanext-tags
+RUN ckan-pip install -e $CKAN_HOME/src/ckanext-tags
+RUN ckan-pip install -r $CKAN_HOME/src/ckanext-tags/requirements.txt
+```
+
 
 
 ---------------
