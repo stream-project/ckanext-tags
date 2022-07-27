@@ -5,10 +5,15 @@ import logging
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 
-import rdflib
 from SPARQLWrapper import SPARQLWrapper, JSON
 
+from flask import Blueprint, render_template
+
 VOCAB_ID = 'semantic_taxonomy_tags'
+
+def hello_plugin():
+    u'''A simple view function'''
+    return u'Hello World, this is served from an extension'
 
 def recreate_semantic_taxonomy_tags():
     '''Create semantic_taxonomy_tags vocab and tags, if they don't exist already.
@@ -75,11 +80,16 @@ def recreate_semantic_taxonomy_tags():
             existing_tags.index(tag["label"]['value'])
         except ValueError:
             logging.warning(
-                "Adding tag {0} to vocab 'semantic_taxonomy_tags'".format(tag["label"]['value']))
+                "Adding tag {0} to vocab {1}".format(tag["label"]['value'], VOCAB_ID))
             data = {'name': tag["label"]['value'], 'vocabulary_id': VOCAB_ID}
             tk.get_action('tag_create')(context, data)
 
 
+
+def new_semantic_tag():
+    return tk.render(
+        'semantictags/base.html'
+    )
 
 def semantic_taxonomy_tags():
     '''Return the list of country codes from the country codes vocabulary.'''
@@ -91,6 +101,10 @@ def semantic_taxonomy_tags():
     except tk.ObjectNotFound:
         return None
 
+def addst():
+    return tk.render(
+        'semantictags/add.html'
+    )
 
 class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
         tk.DefaultDatasetForm):
@@ -100,11 +114,28 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IConfigurer, inherit=False)
     plugins.implements(plugins.IDatasetForm, inherit=False)
     plugins.implements(plugins.ITemplateHelpers, inherit=False)
+    plugins.implements(plugins.IBlueprint)
 
     def update_config(self, config):
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
         # that CKAN will use this plugin's custom templates.
         tk.add_template_directory(config, 'templates')
+
+        tk.add_public_directory(config, 'public')
+        tk.add_resource('fanstatic', 'my_theme')
+
+    # IBlueprint
+
+    def get_blueprint(self):
+        blueprint = Blueprint('foo', self.__module__)
+        rules = [
+            ('/newsemantictag', 'new_semantic_tag', new_semantic_tag),
+            ('/addst', 'addst', addst),
+        ]
+        for rule in rules:
+            blueprint.add_url_rule(*rule)
+
+        return blueprint
 
     def get_helpers(self):
         return {VOCAB_ID: semantic_taxonomy_tags}

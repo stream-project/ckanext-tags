@@ -1,0 +1,22 @@
+{% extends "page.html" %}
+{% block primary_content %}
+  {{ super() }}
+
+  {% block my_content %}
+    <h2>Here you could add a semantic tag.</h2>
+    <div class="controls" id="field-new_semantic_taxonomy_tags">
+        <form action="{{ h.url_for('addst') }}" method="get" id="eindeutig_id">
+            <input type="text" placeholder="Enter new value here" id="input-new_semantic_taxonomy_tags" name="tag">
+            <input type="submit" value="Add">
+        </form>
+    </div>
+  {% endblock %}
+{% endblock %}
+
+{% block secondary_content %}
+  {{ super() }}
+{% endblock %}
+
+{% block actions_content %}
+  {{ super() }}
+{% endblock %}
