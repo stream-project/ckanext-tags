@@ -6,7 +6,7 @@
 #}
 
 {% block package_metadata_fields %}
-<div class="control-group">
+<div class="form-group control-full">
     <label class="control-label" for="field-semantic_taxonomy_tags">{{ _("Semantic Tags") }}</label>
     <div class="controls">
       <select id="field-semantic_taxonomy_tags" name="semantic_taxonomy_tags" data-module="autocomplete" multiple>
@@ -15,7 +15,22 @@
         {% endfor %}
       </select>
     </div>
-  </div>
+    <label class="control-label" for="field-new_semantic_taxonomy_tags">{{ _("Add new semantic tag") }}</label>
+    <div class="controls" id="field-new_semantic_taxonomy_tags">
+        <input type="text" placeholder="Enter new value here" id="input-new_semantic_taxonomy_tags">
+        <button type="button" onclick="addSemanticTag()" class="btn" data-toggle="tooltip" data-placement="top" title="This will reload the page. Thus please save changes you made.">
+            Add
+        </button>
+    </div>
+</div>
+
+<script>
+    function addSemanticTag() {
+        alert(document.getElementById("input-new_semantic_taxonomy_tags").value);
+    }
+
+</script>
+
   {{ super() }}
 
 {% endblock %}
