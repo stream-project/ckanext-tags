@@ -155,7 +155,7 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     def _modify_package_schema(self, schema):
         # Add our custom semantic_taxonomy_tags metadata field to the schema.
         schema.update({
-                VOCAB_ID: [tk.get_validator('tag_string_convert'),
+                VOCAB_ID: [tk.get_validator('ignore_missing'),
                     tk.get_converter('convert_to_tags')(VOCAB_ID)]
                 })
         return schema
@@ -181,7 +181,7 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
         schema.update({
             VOCAB_ID: [
                 tk.get_converter('convert_from_tags')(VOCAB_ID),
-                tk.get_validator('tag_string_convert')]
+                tk.get_validator('ignore_missing')]
             })
 
         return schema
