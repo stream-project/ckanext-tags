@@ -40,17 +40,19 @@ def recreate_semantic_taxonomy_tags():
     logging.warning("vocab list {}".format(tk.get_action('vocabulary_list')(context, {})))
     existing_tags = []
     isVocabExisting = False
+    vocabId = 0;
     for vocab in tk.get_action('vocabulary_list')(context, {}):
         if (vocab['name'] == VOCAB_ID):
             isVocabExisting = True
+            vocabId = vocab['id']
     if isVocabExisting is True:
         logging.warning("semantic_taxonomy_tags vocabulary already exists, delete entries.")
         # remove only tags which are not present in the graph
-        semantic_taxonomy_tags = tk.get_action('tag_list')(
-            data_dict={'vocabulary_id': VOCAB_ID})
+        semantic_taxonomy_tags_ = tk.get_action('tag_list')(
+            data_dict={'vocabulary_id': vocabId})
 
-        for tag in semantic_taxonomy_tags:
-            logging.warning("Current tag \"{0}\" of vocab 'semantic_taxonomy_tags'".format(tag))
+        for tag in semantic_taxonomy_tags_:
+            logging.warning("Current tag \"{0}\" of vocab 'semantic_taxonomy_tags_'".format(tag))
 
         taglist = []
         for tag in new_tags["results"]["bindings"]:
@@ -60,17 +62,17 @@ def recreate_semantic_taxonomy_tags():
             #Cancel because service seems to have issues
             return
 
-        for tag in semantic_taxonomy_tags:
+        for tag in semantic_taxonomy_tags_:
             try:
                 taglist.index(tag)
                 existing_tags.append(tag)
             except ValueError:
                 logging.warning(
-                    "Removing tag {0} to vocab 'semantic_taxonomy_tags'".format(tag))
-                data = {'id': tag, 'vocabulary_id': VOCAB_ID}
+                    "Removing tag {0} to vocab 'semantic_taxonomy_tags_'".format(tag))
+                data = {'id': tag, 'vocabulary_id': vocabId}
                 tk.get_action('tag_delete')(context, data)
     else:
-        logging.warning("Creating vocab 'semantic_taxonomy_tags'")
+        logging.warning("Creating vocab 'semantic_taxonomy_tags_'")
         data = {'name': VOCAB_ID}
         vocab = tk.get_action('vocabulary_create')(context, data)
 
@@ -81,7 +83,7 @@ def recreate_semantic_taxonomy_tags():
         except ValueError:
             logging.warning(
                 "Adding tag {0} to vocab {1}".format(tag["label"]['value'], VOCAB_ID))
-            data = {'name': tag["label"]['value'], 'vocabulary_id': VOCAB_ID}
+            data = {'name': tag["label"]['value'], 'vocabulary_id': vocabId}
             tk.get_action('tag_create')(context, data)
 
 
@@ -95,9 +97,9 @@ def semantic_taxonomy_tags():
     '''Return the list of country codes from the country codes vocabulary.'''
     recreate_semantic_taxonomy_tags()
     try:
-        semantic_taxonomy_tags = tk.get_action('tag_list')(
+        semantic_taxonomy_tags_ = tk.get_action('tag_list')(
                 data_dict={'vocabulary_id': VOCAB_ID})
-        return semantic_taxonomy_tags
+        return semantic_taxonomy_tags_
     except tk.ObjectNotFound:
         return None
 
