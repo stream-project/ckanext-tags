@@ -29,6 +29,19 @@
         alert(document.getElementById("input-new_semantic_taxonomy_tags").value);
     }
 
+    function test() {
+        var div = $("#s2id_field-semantic_taxonomy_tags")
+        var ul = div.children('ul')
+        var a = $("<a>", {"href": "#", "class": "select2-search-choice-close", "tabindex": -1});
+        var div2 = $("<div>");
+        div2.text = "Steel2"
+        div2.textContent = "Steel2"
+        var li2 = $("<li>", {"class": "select2-search-choice"});
+        li2.append(div2)
+        li2.append(a)
+        ul.append(li2) // TODO: append before last element
+    }
+
 </script>
 
   {{ super() }}
