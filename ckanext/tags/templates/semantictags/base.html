@@ -5,7 +5,7 @@
   {% block my_content %}
     <h2>Here you could add a semantic tag.</h2>
     <div class="controls" id="field-new_semantic_taxonomy_tags">
-        <form action="{{ h.url_for('addst') }}" method="get" id="eindeutig_id">
+        <form action="/addst" method="POST" id="eindeutig_id">
             <input type="text" placeholder="Enter new value here" id="input-new_semantic_taxonomy_tags" name="tag">
             <input type="submit" value="Add">
         </form>

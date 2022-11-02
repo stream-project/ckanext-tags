@@ -9,6 +9,8 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 
 from flask import Blueprint, render_template
 
+from ckan.lib.base import request
+
 VOCAB_ID = 'semantic_taxonomy_tags'
 
 def hello_plugin():
@@ -103,11 +105,6 @@ def semantic_taxonomy_tags():
     except tk.ObjectNotFound:
         return None
 
-def addst():
-    return tk.render(
-        'semantictags/add.html'
-    )
-
 class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
         tk.DefaultDatasetForm):
     '''An example IDatasetForm CKAN plugin.
@@ -117,6 +114,7 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IDatasetForm, inherit=False)
     plugins.implements(plugins.ITemplateHelpers, inherit=False)
     plugins.implements(plugins.IBlueprint)
+    plugins.implements(plugins.IRoutes, inherit=True)
 
     def update_config(self, config):
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
@@ -131,13 +129,17 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     def get_blueprint(self):
         blueprint = Blueprint('foo', self.__module__)
         rules = [
-            ('/newsemantictag', 'new_semantic_tag', new_semantic_tag),
-            ('/addst', 'addst', addst),
+            ('/newsemantictag', 'new_semantic_tag', new_semantic_tag)
         ]
         for rule in rules:
             blueprint.add_url_rule(*rule)
 
         return blueprint
+
+    # IRoutes
+    def before_map(self, map):
+        map.connect('/addst', controller='ckanext.tags.controller:SemantictagsController', action='add_semantictag')
+        return map
 
     def get_helpers(self):
         return {VOCAB_ID: semantic_taxonomy_tags}
@@ -169,6 +171,12 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     def update_package_schema(self):
         schema = super(ExampleIDatasetFormPlugin, self).update_package_schema()
         schema = self._modify_package_schema(schema)
+
+        logging.warning("update_package_schema: schema - keys {}".format(schema.keys()))
+        logging.warning("update_package_schema: schema[tag_string] {}".format(schema['tag_string']))
+        logging.warning("update_package_schema: schema[semantic_taxonomy_tags] {}".format(schema['semantic_taxonomy_tags']))
+        logging.warning("update_package_schema: schema[extras] {}".format(schema['extras']))
+
         return schema
 
     def show_package_schema(self):
