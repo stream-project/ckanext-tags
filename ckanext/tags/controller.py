@@ -1,4 +1,3 @@
-
 import ckan.plugins as p
 from ckan.lib.base import BaseController, response, request
 
@@ -6,6 +5,7 @@ c = p.toolkit.c
 render = p.toolkit.render
 
 VOCAB_ID = 'semantic_taxonomy_tags'
+
 
 class SemantictagsController(BaseController):
 

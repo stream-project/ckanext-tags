@@ -11,6 +11,7 @@ from flask import Blueprint, render_template
 
 from ckan.lib.base import request
 
+
 VOCAB_ID = 'semantic_taxonomy_tags'
 
 def hello_plugin():
@@ -105,6 +106,17 @@ def semantic_taxonomy_tags():
     except tk.ObjectNotFound:
         return None
 
+def add_semantictag():
+    user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
+    context = {'user': user['name']}
+    logging.warning("addst: POST {}".format(request.POST))
+    data = {'name': request.POST['tag'], 'vocabulary_id': VOCAB_ID}
+    tk.get_action('tag_create')(context, data)
+
+    return tk.render(
+        'semantictags/add.html'
+    )
+
 class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
         tk.DefaultDatasetForm):
     '''An example IDatasetForm CKAN plugin.
@@ -114,7 +126,7 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IDatasetForm, inherit=False)
     plugins.implements(plugins.ITemplateHelpers, inherit=False)
     plugins.implements(plugins.IBlueprint)
-    plugins.implements(plugins.IRoutes, inherit=True)
+    plugins.implements(plugins.IRoutes, inherit=False)
 
     def update_config(self, config):
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
@@ -127,9 +139,10 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     # IBlueprint
 
     def get_blueprint(self):
-        blueprint = Blueprint('foo', self.__module__)
+        blueprint = Blueprint(self.name, self.__module__)
         rules = [
-            ('/newsemantictag', 'new_semantic_tag', new_semantic_tag)
+            ('/newsemantictag', 'new_semantic_tag', new_semantic_tag),
+            ('/addst', 'addst', add_semantictag)
         ]
         for rule in rules:
             blueprint.add_url_rule(*rule)
@@ -138,7 +151,11 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
 
     # IRoutes
     def before_map(self, map):
-        map.connect('/addst', controller='ckanext.tags.controller:SemantictagsController', action='add_semantictag')
+        map.connect('/addst2', controller='ckanext.tags.controller:SemantictagsController', action='add_semantictag') # neither of iroutes (cant find controller or 404) nor iblueprint (404) does work.
+        # also removing the controller key does result in a 404
+        return map
+
+    def after_map(self, map):
         return map
 
     def get_helpers(self):
