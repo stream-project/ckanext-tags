@@ -13,6 +13,7 @@ from ckan.lib.base import request
 
 
 VOCAB_ID = 'semantic_taxonomy_tags'
+global vocab_id_global
 
 def hello_plugin():
     u'''A simple view function'''
@@ -88,7 +89,9 @@ def recreate_semantic_taxonomy_tags():
                 "Adding tag {0} to vocab {1}".format(tag["label"]['value'], VOCAB_ID))
             data = {'name': tag["label"]['value'], 'vocabulary_id': vocabId}
             tk.get_action('tag_create')(context, data)
-
+    global vocab_id_global
+    vocab_id_global = vocabId
+    logging.warning("Id of {0} vocabulary is {1}".format(VOCAB_ID, vocabId))
 
 
 def new_semantic_tag():
@@ -107,11 +110,25 @@ def semantic_taxonomy_tags():
         return None
 
 def add_semantictag():
-    user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
-    context = {'user': user['name']}
-    logging.warning("addst: POST {}".format(request.POST))
-    data = {'name': request.POST['tag'], 'vocabulary_id': VOCAB_ID}
-    tk.get_action('tag_create')(context, data)
+    #init
+    global vocab_id_global
+    tags = semantic_taxonomy_tags()
+
+    logging.warning("addst: GET: tag {}".format(request.params.get('tag')))
+    logging.warning("Id of {0} vocabulary is {1}".format(VOCAB_ID, vocab_id_global))
+    logging.warning("tags: {}".format(tags))
+
+    tag = request.params.get('tag')
+    tagExisting = False
+    for _tag in tags:
+        if _tag.lower() == tag.lower():
+            tagExisting = True
+
+    if tagExisting == False
+        user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
+        context = {'user': user['name']}
+        data = {'name': tag, 'vocabulary_id': vocab_id_global}
+        tk.get_action('tag_create')(context, data)
 
     return tk.render(
         'semantictags/add.html'
@@ -126,7 +143,6 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IDatasetForm, inherit=False)
     plugins.implements(plugins.ITemplateHelpers, inherit=False)
     plugins.implements(plugins.IBlueprint)
-    plugins.implements(plugins.IRoutes, inherit=False)
 
     def update_config(self, config):
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
@@ -142,21 +158,12 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
         blueprint = Blueprint(self.name, self.__module__)
         rules = [
             ('/newsemantictag', 'new_semantic_tag', new_semantic_tag),
-            ('/addst', 'addst', add_semantictag)
+            ('/addst', 'addst', add_semantictag) # does only work with GET and not POST
         ]
         for rule in rules:
             blueprint.add_url_rule(*rule)
 
         return blueprint
-
-    # IRoutes
-    def before_map(self, map):
-        map.connect('/addst2', controller='ckanext.tags.controller:SemantictagsController', action='add_semantictag') # neither of iroutes (cant find controller or 404) nor iblueprint (404) does work.
-        # also removing the controller key does result in a 404
-        return map
-
-    def after_map(self, map):
-        return map
 
     def get_helpers(self):
         return {VOCAB_ID: semantic_taxonomy_tags}
