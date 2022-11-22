@@ -154,6 +154,12 @@ def add_semantictag():
         'semantictags/add.html'
     )
 
+@tk.side_effect_free
+def process_tag_patch(context,data_dict=None):
+    logging.warning("process_tag_patch context: {}".format(context)) # example: {u'auth_user_obj': None, u'session': <sqlalchemy.orm.scoping.scoped_session object at 0x7f4bedcb6ad0>, u'user': u'', '__auth_audit': [('process_tag_patch', 139963984044472)], u'model': <module 'ckan.model' from '/usr/lib/ckan/venv/src/ckan/ckan/model/__init__.pyc'>, u'api_version': 3}
+    logging.warning("process_tag_patch data_dict: {}".format(data_dict)) # example: {u'insert': [u'555'], u'delete': [u'omega']}
+
+
 class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
         tk.DefaultDatasetForm):
     '''An example IDatasetForm CKAN plugin.
@@ -163,6 +169,7 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IDatasetForm, inherit=False)
     plugins.implements(plugins.ITemplateHelpers, inherit=False)
     plugins.implements(plugins.IBlueprint)
+    plugins.implements(plugins.IActions)
 
     def update_config(self, config):
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
@@ -171,6 +178,12 @@ class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
 
         tk.add_public_directory(config, 'public')
         tk.add_resource('fanstatic', 'my_theme')
+
+    # IActions
+
+    def get_actions(self):
+        # Registers the custom API method defined above
+        return {'process_tag_patch': process_tag_patch}
 
     # IBlueprint
 
