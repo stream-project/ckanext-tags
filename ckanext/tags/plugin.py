@@ -11,6 +11,8 @@ from flask import Blueprint, render_template
 
 from ckan.lib.base import request
 
+import uuid
+
 
 VOCAB_ID = 'semantic_taxonomy_tags'
 global vocab_id_global
@@ -115,8 +117,8 @@ def add_semantictag():
     tags = semantic_taxonomy_tags()
 
     logging.warning("addst: GET: tag {}".format(request.params.get('tag')))
-    logging.warning("Id of {0} vocabulary is {1}".format(VOCAB_ID, vocab_id_global))
-    logging.warning("tags: {}".format(tags))
+    #logging.warning("Id of {0} vocabulary is {1}".format(VOCAB_ID, vocab_id_global))
+    #logging.warning("tags: {}".format(tags))
 
     tag = request.params.get('tag')
     tagExisting = False
@@ -124,11 +126,29 @@ def add_semantictag():
         if _tag.lower() == tag.lower():
             tagExisting = True
 
-    if tagExisting == False
+    if tagExisting == False:
         user = tk.get_action('get_site_user')({'ignore_auth': True}, {})
         context = {'user': user['name']}
         data = {'name': tag, 'vocabulary_id': vocab_id_global}
         tk.get_action('tag_create')(context, data)
+
+        # send to sparql endpoint
+        sparql = SPARQLWrapper("https://sparql.stream-dataspace.net/sparql/")
+        query = """
+                PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                PREFIX ckan: <http://stream-ontology.com/ckan/>
+                INSERT DATA { GRAPH <http://stream-ontology.com/tags/> { <http://stream-ontology.com/tags/newId> a skos:Concept ; skos:prefLabel "mylabel" } }
+            """
+        query = query.replace("newId", str(uuid.uuid4()))
+        query = query.replace("mylabel", tag)
+        #logging.warning("sparql query: {}".format(query))
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        ret = sparql.query().convert()
+        #logging.warning("sparql return: {}".format(ret))
+
+    #logging.warning("all tags: {}".format(tk.get_action('tag_list')(
+    #            data_dict={'vocabulary_id': VOCAB_ID})))
 
     return tk.render(
         'semantictags/add.html'
