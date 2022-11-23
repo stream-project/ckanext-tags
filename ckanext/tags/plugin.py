@@ -16,6 +16,7 @@ import uuid
 
 VOCAB_ID = 'semantic_taxonomy_tags'
 global vocab_id_global
+vocab_id_global = ""
 
 def hello_plugin():
     u'''A simple view function'''
@@ -158,6 +159,50 @@ def add_semantictag():
 def process_tag_patch(context,data_dict=None):
     logging.warning("process_tag_patch context: {}".format(context)) # example: {u'auth_user_obj': None, u'session': <sqlalchemy.orm.scoping.scoped_session object at 0x7f4bedcb6ad0>, u'user': u'', '__auth_audit': [('process_tag_patch', 139963984044472)], u'model': <module 'ckan.model' from '/usr/lib/ckan/venv/src/ckan/ckan/model/__init__.pyc'>, u'api_version': 3}
     logging.warning("process_tag_patch data_dict: {}".format(data_dict)) # example: {u'insert': [u'555'], u'delete': [u'omega']}
+    # ckan.logic.action.get.resource_search to get a resource
+    # ckan.logic.action.patch.package_patch to change attributes of a resource
+    global vocab_id_global
+
+    # Authorize
+    # TODO
+
+    if "delete" in data_dict:
+        for tag in data_dict["delete"]:
+            # get the relevant datasets per tag
+            data = {
+                id: tag,
+                "vocabulary_id": next(item for item in [vocab_id_global, VOCAB_ID] if item is not ""),
+                "include_datasets": True
+            }
+            logging.warning("process_tag_patch data for details: {}".format(data))
+            details = tk.get_action('tag_show')(context, data) # Validation error (Action API): "{u'__type': u'Validation Error', 'id': [u'Missing value']}"
+            logging.warning("process_tag_patch tag details: {}".format(details))
+
+            # patch the datasets
+            for dataset in details["datasets"]:
+                patch = {id: dataset.id}
+                patch[VOCAB_ID] = dataset[VOCAB_ID].remove(tag)
+                tk.patch_action('package_patch')(context, patch)
+
+    if "insert" in data_dict:
+        for tag in data_dict["delete"]:
+            # get the relevant datasets per tag
+            data = {
+                id: tag,
+                "vocabulary_id": next(item for item in [vocab_id_global, VOCAB_ID] if item is not ""),
+                "include_datasets": True
+            }
+            logging.warning("process_tag_patch data for details: {}".format(data))
+            details = tk.get_action('tag_show')(context, data) # Validation error (Action API): "{u'__type': u'Validation Error', 'id': [u'Missing value']}"
+            logging.warning("process_tag_patch tag details: {}".format(details))
+
+            # patch the datasets
+            for dataset in details["datasets"]:
+                patch = {id: dataset.id}
+                local_tags = dataset[VOCAB_ID]
+                local_tags.append(tag)
+                patch[VOCAB_ID] = local_tags
+                tk.patch_action('package_patch')(context, patch)
 
 
 class ExampleIDatasetFormPlugin(plugins.SingletonPlugin,
