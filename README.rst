@@ -24,3 +24,10 @@ ADD ./Plugins/ckanext-tags $CKAN_HOME/src/ckanext-tags
 RUN ckan-pip install -e $CKAN_HOME/src/ckanext-tags
 RUN ckan-pip install -r $CKAN_HOME/src/ckanext-tags/requirements.txt
 ```
+
+------------
+TODOs
+------------
+
+* See Todos in Code
+* make the SPARQL URI a env
